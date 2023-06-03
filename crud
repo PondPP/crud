@@ -1,0 +1,83 @@
+const express = require('express');
+const router = express.Router();
+const Info = require('../models/info');
+
+router.use(express.json());
+
+/* Create */
+router.post('/create', async(req, res) => {
+  try{
+    const {name, desc, status} = req.body;
+
+    console.log(req.body);
+
+
+    const info = new Info({
+      name : name,
+      desc : desc,
+      status : status
+    });
+
+    const error = info.validateSync();
+    if (error){
+      return res.status(400).json(error);
+    }
+
+    await info.save();
+
+    res.status(201).json({message : "info was created."});
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error."});
+  }
+});
+
+// Read 
+router.get("/", async (req, res) => {
+  try {
+    const info = await(Info.find());
+    res.status(200).json(info);
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error."});
+}
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const info = await(Info.findById(req.params.id));
+    res.status(200).json(info);
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error."});
+  }
+});
+
+// Update
+router.put("/:id", async (req, res) => {
+  try{
+    const {name, desc, status} = req.body;
+    const info = await(Info.findByIdAndUpdate(req.params.id, {
+      name : name,
+      desc : desc,
+      status : status
+    }));
+    res.status(200).json(info);
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error."});
+  }
+});
+
+// Delete
+router.delete("/:id", async (req, res) => {
+  try{
+    const info = await(Info.findByIdAndDelete(req.params.id));
+    res.status(200).json(info);
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error."});
+  }
+});
+
+module.exports = router;
